@@ -1,24 +1,115 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class PasswordManager {
-    public static void main(String[] args) {
-        List<String> passwords = new ArrayList<>();
-        
-        // Добавляем примеры
-        passwords.add("Admin123!");
-        passwords.add("qwerty");
-        passwords.add("Super_Safe_2024");
+/**
+ * Enterprise-level HelloController
+ * Демонстрирует работу с коллекциями, потоками (Streams) и логированием.
+ */
+public class HelloController {
 
-        System.out.println("--- Отчет по безопасности ---");
-        for (String p : passwords) {
-            String status = isSecure(p) ? "НАДЕЖНЫЙ" : "СЛАБЫЙ";
-            System.out.println("Пароль [" + p + "] статус: " + status);
-        }
+    // Внутреннее хранилище пользователей (Имитация базы данных)
+    private static final List<User> userDatabase = new ArrayList<>();
+    private static final String VERSION = "2.1.0-RELEASE";
+
+    static {
+        // Предварительное заполнение данных
+        userDatabase.add(new User(1, "admin", "Administrator", true));
+        userDatabase.add(new User(2, "jdoe", "John Doe", false));
+        userDatabase.add(new User(3, "m_smith", "Maria Smith", true));
     }
 
-    public static boolean isSecure(String pwd) {
-        // Проверка: длина от 8 символов и наличие цифры
-        return pwd.length() >= 8 && pwd.matches(".*\\d.*");
+    public static void main(String[] args) {
+        HelloController app = new HelloController();
+        app.runDemo();
+    }
+
+    /**
+     * Запуск демонстрации всех функций контроллера
+     */
+    public void runDemo() {
+        Logger.info("Запуск системы HelloController v" + VERSION);
+
+        // 1. Приветствие конкретного пользователя
+        System.out.println(handleHelloRequest("admin"));
+
+        // 2. Получение списка всех активных имен (используя Stream API)
+        System.out.println("Список активных пользователей: " + getActiveUserNames());
+
+        // 3. Проверка статуса системы
+        System.out.println(getSystemReport());
+
+        Logger.info("Работа контроллера завершена штатно.");
+    }
+
+    /**
+     * Обработка запроса приветствия (Эмуляция GET-запроса)
+     */
+    public String handleHelloRequest(String login) {
+        return userDatabase.stream()
+                .filter(u -> u.getLogin().equalsIgnoreCase(login))
+                .findFirst()
+                .map(u -> String.format("Приветствуем, %s [%s]! Последний вход: %s", 
+                        u.getFullName(), u.getLogin(), getTimestamp()))
+                .orElse("Ошибка: Пользователь '" + login + "' не найден.");
+    }
+
+    /**
+     * Возвращает имена только активных пользователей через запятую
+     */
+    public String getActiveUserNames() {
+        return userDatabase.stream()
+                .filter(User::isActive)
+                .map(User::getFullName)
+                .collect(Collectors.joining(", "));
+    }
+
+    /**
+     * Генерирует сложный технический отчет о системе
+     */
+    public String getSystemReport() {
+        long activeCount = userDatabase.stream().filter(User::isActive).count();
+        return String.format("--- [ОТЧЕТ СИСТЕМЫ] ---\nВерсия: %s\nВсего записей: %d\nАктивных сессий: %d\nСтатус: OK\n-----------------------", 
+                VERSION, userDatabase.size(), activeCount);
+    }
+
+    private String getTimestamp() {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
+
+    // --- ВНУТРЕННИЕ ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ ---
+
+    /**
+     * Модель данных Пользователь
+     */
+    static class User {
+        private int id;
+        private String login;
+        private String fullName;
+        private boolean isActive;
+
+        public User(int id, String login, String fullName, boolean isActive) {
+            this.id = id;
+            this.login = login;
+            this.fullName = fullName;
+            this.isActive = isActive;
+        }
+
+        public String getLogin() { return login; }
+        public String getFullName() { return fullName; }
+        public boolean isActive() { return isActive; }
+    }
+
+    /**
+     * Сервис для логирования событий
+     */
+    static class Logger {
+        public static void info(String msg) {
+            System.out.println("[INFO] [" + LocalDateTime.now() + "] " + msg);
+        }
+        public static void warn(String msg) {
+            System.out.println("[WARN] [" + LocalDateTime.now() + "] " + msg);
+        }
     }
 }

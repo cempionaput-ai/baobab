@@ -1,0 +1,24 @@
+import java.util.ArrayList;
+import java.util.List;
+
+public class PasswordManager {
+    public static void main(String[] args) {
+        List<String> passwords = new ArrayList<>();
+        
+        // Добавляем примеры
+        passwords.add("Admin123!");
+        passwords.add("qwerty");
+        passwords.add("Super_Safe_2024");
+
+        System.out.println("--- Отчет по безопасности ---");
+        for (String p : passwords) {
+            String status = isSecure(p) ? "НАДЕЖНЫЙ" : "СЛАБЫЙ";
+            System.out.println("Пароль [" + p + "] статус: " + status);
+        }
+    }
+
+    public static boolean isSecure(String pwd) {
+        // Проверка: длина от 8 символов и наличие цифры
+        return pwd.length() >= 8 && pwd.matches(".*\\d.*");
+    }
+}
